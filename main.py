@@ -6,6 +6,8 @@ from authlib.integrations.starlette_client import OAuth, OAuthError
 from starlette.middleware.sessions import SessionMiddleware
 from starlette.config import Config
 
+config = Config(".env")
+
 # Load configs from environment variables (with defaults)
 CLIENT_ID = os.environ.get("INSTAGRAM_CLIENT_ID", "your_instagram_client_id")
 CLIENT_SECRET = os.environ.get("INSTAGRAM_CLIENT_SECRET", "your_instagram_client_secret")
@@ -26,7 +28,7 @@ config_data = {
     "INSTAGRAM_REDIRECT_URI": REDIRECT_URI,
     "SECRET_KEY": SECRET_KEY,
 }
-config = Config(environ=config_data)
+# config = Config(environ=config_data)
 
 # Set up OAuth with Authlib for Instagram
 oauth = OAuth(config)
@@ -34,8 +36,8 @@ instagram = oauth.register(
     name="instagram",
     client_id=config("INSTAGRAM_CLIENT_ID"),
     client_secret=config("INSTAGRAM_CLIENT_SECRET"),
-    access_token_url="https://api.instagram.com/oauth/access_token",
-    authorize_url="https://api.instagram.com/oauth/authorize",
+    access_token_url="https://graph.facebook.com/v15.0/oauth/access_token",
+    authorize_url="https://www.facebook.com/v15.0/dialog/oauth",
     api_base_url="https://graph.instagram.com/",
     client_kwargs={"scope": "user_profile,user_media"},
 )
