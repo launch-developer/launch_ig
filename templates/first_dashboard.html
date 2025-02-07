@@ -1,20 +1,30 @@
-<!-- templates/dashboard.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Instagram Account Linking</title>
+  <meta charset="UTF-8">
+  <title>Instagram Data Scraper Dashboard</title>
 </head>
 <body>
-    <h1>Dashboard</h1>
-    {% if user %}
-        <p>Welcome, {{ user.username }}!</p>
-        <p>Your Instagram account is linked.</p>
-    {% else %}
-        <p>You haven't linked your Instagram account yet.</p>
-        <a href="/login">
-            <button>Link Your Instagram Account</button>
-        </a>
-    {% endif %}
+  <h1>Instagram Data Scraper Dashboard</h1>
+  <form action="/scrape" method="post">
+    <label for="instagram_url">Enter Instagram URL:</label>
+    <input type="text" id="instagram_url" name="instagram_url" placeholder="https://www.instagram.com/username/">
+    <button type="submit">Scrape Data</button>
+  </form>
+
+  {% if scraped_data %}
+    <h2>Scraped Data Summary</h2>
+    <p>Total items scraped: {{ scraped_data|length }}</p>
+    <ul>
+      {% for item in scraped_data[:5] %}
+        <li>
+          <strong>ID:</strong> {{ item.id if item.id is defined else "N/A" }}<br>
+          <strong>Type:</strong> {{ item.type if item.type is defined else "N/A" }}<br>
+          <strong>Caption:</strong> {{ item.caption if item.caption is defined else "N/A" }}
+        </li>
+      {% endfor %}
+    </ul>
+    <p>Only a summary of the first 5 items is shown.</p>
+  {% endif %}
 </body>
 </html>

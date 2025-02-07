@@ -1,96 +1,51 @@
 import os
-from fastapi import FastAPI, Request, HTTPException
-from fastapi.responses import JSONResponse, RedirectResponse, HTMLResponse
+from dotenv import load_dotenv
+from fastapi import FastAPI, Request, HTTPException, Form
+from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
-from authlib.integrations.starlette_client import OAuth, OAuthError
-from starlette.middleware.sessions import SessionMiddleware
-from starlette.config import Config
+import httpx
 
-config = Config(".env")
-
-# Load configs from environment variables (with defaults)
-CLIENT_ID = os.environ.get("INSTAGRAM_CLIENT_ID", "your_instagram_client_id")
-CLIENT_SECRET = os.environ.get("INSTAGRAM_CLIENT_SECRET", "your_instagram_client_secret")
-REDIRECT_URI = os.environ.get("INSTAGRAM_REDIRECT_URI", "http://localhost:8000/auth")
-SECRET_KEY = os.environ.get("SECRET_KEY", "your_session_secret_key")
-
-# Initialize FastAPI app and add session middleware
+# Initialize FastAPI app and set up templates
 app = FastAPI()
-app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY, session_cookie="session")
-
-# Set up Jinja2 templates (expects a "templates" directory in the project root)
 templates = Jinja2Templates(directory="templates")
+load_dotenv()
 
-# Create a config for Authlib from environment variables
-config_data = {
-    "INSTAGRAM_CLIENT_ID": CLIENT_ID,
-    "INSTAGRAM_CLIENT_SECRET": CLIENT_SECRET,
-    "INSTAGRAM_REDIRECT_URI": REDIRECT_URI,
-    "SECRET_KEY": SECRET_KEY,
-}
-# config = Config(environ=config_data)
+# Apify configuration (set APIFY_TOKEN in your environment)
+APIFY_TOKEN = os.environ.get("APIFY_TOKEN", "your_apify_token")
+print ("APIFY_TOKEN:", APIFY_TOKEN)
+# This endpoint will run the Instagram Scraper actor synchronously
+APIFY_SYNC_RUN_URL = f"https://api.apify.com/v2/acts/apify~instagram-scraper/run-sync-get-dataset-items?token={APIFY_TOKEN}"
 
-# Set up OAuth with Authlib for Instagram
-oauth = OAuth(config)
-instagram = oauth.register(
-    name="instagram",
-    client_id=config("INSTAGRAM_CLIENT_ID"),
-    client_secret=config("INSTAGRAM_CLIENT_SECRET"),
-    access_token_url="https://graph.facebook.com/v15.0/oauth/access_token",
-    authorize_url="https://www.facebook.com/v15.0/dialog/oauth",
-    api_base_url="https://graph.instagram.com/",
-    client_kwargs={"scope": "user_profile,user_media"},
-)
+async def run_apify_scraper_sync(instagram_url: str, results_limit: int = 10):
+    input_data = {
+         "directUrls": [instagram_url],
+         "resultsType": "posts",  # Ensure you're passing the type if needed
+         "resultsLimit": results_limit,
+    }
+    # Increase the timeout to 120 seconds (or more if needed)
+    async with httpx.AsyncClient(timeout=120.0) as client:
+         response = await client.post(APIFY_SYNC_RUN_URL, json=input_data)
+         if response.status_code != 200:
+              print("Apify error response:", response.text)
+              raise HTTPException(status_code=500, detail="Failed to run Apify scraper synchronously")
+         dataset_items = response.json()
+         return dataset_items
 
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
     """
-    Home endpoint. Redirects to the dashboard.
+    Render the dashboard page. Initially no scraped data is displayed.
     """
-    return RedirectResponse(url="/dashboard")
+    return templates.TemplateResponse("first_dashboard.html", {"request": request, "scraped_data": None})
 
-@app.get("/dashboard", response_class=HTMLResponse)
-async def dashboard(request: Request):
+@app.post("/scrape", response_class=HTMLResponse)
+async def scrape(request: Request, instagram_url: str = Form(...)):
     """
-    Renders the dashboard. If a user is logged in (i.e. account linked), their data is displayed.
-    Otherwise, a link is provided to initiate the Instagram OAuth flow.
+    Receives the Instagram URL from a form, calls Apify to scrape data,
+    and then renders the dashboard with the returned data.
     """
-    user = request.session.get("user")
-    return templates.TemplateResponse("first_dashboard.html", {"request": request, "user": user})
-
-@app.get("/login")
-async def login(request: Request):
-    """
-    Initiates the OAuth flow by redirecting the user to Instagram's login page.
-    """
-    redirect_uri = config("INSTAGRAM_REDIRECT_URI")
-    print("Session after authorize_redirect:", request.session)
-
-    return await instagram.authorize_redirect(request, redirect_uri)
-
-@app.get("/auth")
-async def auth(request: Request):
-    """
-    OAuth callback endpoint. Handles the response from Instagram,
-    obtains an access token, fetches basic user information,
-    and stores it in the session.
-    """
-    print("Callback query params:", dict(request.query_params))
-    try:
-        token = await instagram.authorize_access_token(request)
-    except OAuthError as error:
-        raise HTTPException(status_code=400, detail=f"OAuth error: {error}")
-
-    # Use the token to get user information
-    user_data_response = await instagram.get("me?fields=id,username")
-    user_data = user_data_response.json()
-
-    # Store the user information in the session
-    request.session["user"] = user_data
-    # Optionally, store the token as well if you plan to make further API calls later:
-    request.session["token"] = token
-
-    return RedirectResponse(url="/dashboard")
+    scraped_data = await run_apify_scraper_sync(instagram_url)
+    return templates.TemplateResponse("first_dashboard.html", {"request": request, "scraped_data": scraped_data})
 
 if __name__ == "__main__":
     import uvicorn
