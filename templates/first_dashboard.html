@@ -1,0 +1,20 @@
+<!-- templates/dashboard.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Instagram Account Linking</title>
+</head>
+<body>
+    <h1>Dashboard</h1>
+    {% if user %}
+        <p>Welcome, {{ user.username }}!</p>
+        <p>Your Instagram account is linked.</p>
+    {% else %}
+        <p>You haven't linked your Instagram account yet.</p>
+        <a href="/login">
+            <button>Link Your Instagram Account</button>
+        </a>
+    {% endif %}
+</body>
+</html>
