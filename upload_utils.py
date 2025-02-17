@@ -21,13 +21,12 @@ def upload_image_to_gcs(image_url: str, bucket_name: str, destination_blob_name:
     # Upload the image data
     blob.upload_from_string(image_data, content_type=response.headers.get("Content-Type"))
 
-    # Remove blob.make_public() because uniform bucket-level access is enabled.
-    # Instead, ensure your bucket’s IAM policy grants allUsers the roles/storage.objectViewer role.
-    # Then, construct the public URL manually:
+    # Because uniform bucket-level access is enabled, we can’t use legacy ACLs.
+    # Ensure your bucket’s IAM policy grants public read (roles/storage.objectViewer for allUsers).
+    # Construct the public URL manually:
     public_url = f"https://storage.googleapis.com/{bucket_name}/{destination_blob_name}"
     return public_url
 
-# Example usage:
 if __name__ == "__main__":
     bucket_name = os.environ.get("GCS_BUCKET_NAME", "your-unique-bucket-name")
     test_image_url = "https://example.com/some-image.jpg"
