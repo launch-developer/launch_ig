@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Instagram Posts</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background-color: #f8f8f8;
+    }
+    .post {
+      background: #fff;
+      border: 1px solid #ddd;
+      padding: 15px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .post img {
+      max-width: 100%;
+      height: auto;
+      display: block;
+      margin-bottom: 10px;
+    }
+    .caption {
+      font-size: 1.1em;
+      color: #333;
+      white-space: pre-wrap; /* preserve line breaks */
+    }
+  </style>
+</head>
+<body>
+  <h1>Instagram Posts</h1>
+  {% for post in posts %}
+    <div class="post">
+      {% if post.proxy_image %}
+        <img src="{{ post.proxy_image }}" alt="Post image" />
+      {% elif post.images and post.images|length > 0 %}
+        <img src="{{ post.images[0] }}" alt="Post image" />
+      {% elif post.displayUrl %}
+        <img src="{{ post.displayUrl }}" alt="Post image" />
+      {% else %}
+        <p>[No image available]</p>
+      {% endif %}
+      
+      <div class="caption">
+        {% if post.caption %}
+          {{ post.caption }}
+        {% else %}
+          [No caption provided]
+        {% endif %}
+      </div>
+    </div>
+  {% endfor %}
+</body>
+</html>

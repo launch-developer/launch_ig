@@ -12,19 +12,12 @@
     <button type="submit">Scrape Data</button>
   </form>
 
-  {% if scraped_data %}
-    <h2>Scraped Data Summary</h2>
-    <p>Total items scraped: {{ scraped_data|length }}</p>
-    <ul>
-      {% for item in scraped_data[:5] %}
-        <li>
-          <strong>ID:</strong> {{ item.id if item.id is defined else "N/A" }}<br>
-          <strong>Type:</strong> {{ item.type if item.type is defined else "N/A" }}<br>
-          <strong>Caption:</strong> {{ item.caption if item.caption is defined else "N/A" }}
-        </li>
-      {% endfor %}
-    </ul>
-    <p>Only a summary of the first 5 items is shown.</p>
+  {% if total_items is defined %}
+    <h2>Scraping Completed</h2>
+    <p>Total items scraped: {{ total_items }}</p>
+    <p>
+      <a href="{{ download_link }}">Download the full JSON data</a>
+    </p>
   {% endif %}
 </body>
 </html>
