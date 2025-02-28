@@ -25,10 +25,14 @@ print("APIFY_TOKEN:", APIFY_TOKEN)
 # Create an ApifyClient instance
 client = ApifyClient(APIFY_TOKEN)
 
+def construct_instagram_url(username: str) -> str:
+    """Constructs an Instagram profile URL from a given username."""
+    return f"https://www.instagram.com/{username}/"
+
 # Function to start the Instagram Scraper actor run using the ApifyClient.
 def run_instagram_scraper_sync(instagram_url: str, results_limit: int = 30) -> dict:
     run_input = {
-        "directUrls": [instagram_url],
+        "directUrls": [construct_instagram_url(instagram_url)],
         "resultsType": "posts",
         "resultsLimit": results_limit,
         "scrapeComments": False,  # adjust as needed
@@ -79,7 +83,7 @@ async def home(request: Request):
 @app.post("/scrape", response_class=HTMLResponse)
 async def scrape(request: Request, instagram_url: str = Form(...)):
     try:
-        filename = await run_apify_and_write_to_file(instagram_url, results_limit=12)
+        filename = await run_apify_and_write_to_file(instagram_url, results_limit=30)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Scraping error: {e}")
 
