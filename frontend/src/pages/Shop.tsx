@@ -4,6 +4,7 @@ import Layout from '../components/Layout';
 import ProductGrid from '../components/ProductGrid';
 import { featuredProducts } from '../data/products';
 
+// Hardcoded API URL for now
 const API_URL = 'http://localhost:8000';
 
 interface InstagramPost {

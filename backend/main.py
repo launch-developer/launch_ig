@@ -14,6 +14,21 @@ from apify_client import ApifyClient
 import boto3
 from botocore.exceptions import BotoCoreError, ClientError
 
+# Try to load environment variables from parent directory
+parent_env_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), '.env')
+if os.path.exists(parent_env_path):
+    print(f"Loading environment from: {parent_env_path}")
+    load_dotenv(dotenv_path=parent_env_path)
+else:
+    print(f"Parent .env file not found at: {parent_env_path}")
+    # Fallback to local .env if exists
+    local_env_path = os.path.join(os.path.dirname(__file__), '.env')
+    if os.path.exists(local_env_path):
+        print(f"Loading environment from: {local_env_path}")
+        load_dotenv(dotenv_path=local_env_path)
+    else:
+        print("No .env file found. Using environment variables directly.")
+
 ###############################
 # 1) Upload image bytes to S3
 ###############################
@@ -139,8 +154,7 @@ app.add_middleware(
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-load_dotenv()
-
+# APIFY token from environment variables
 APIFY_TOKEN = os.getenv("APIFY_TOKEN", "your-apify-token-here")
 client = ApifyClient(APIFY_TOKEN)
 

@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import Layout from '../components/Layout';
 import { Home, ShoppingBag } from 'lucide-react';
 
+// Hardcoded API URL for now
 const API_URL = 'http://localhost:8000';
 
 const CreateShop = () => {
