@@ -1,9 +1,12 @@
-# launch_ig
-For insta api
-
 # Cart Design Sorcery
 
 A web application that allows users to create an e-commerce shop from their Instagram posts.
+
+## Project Structure
+
+- `/backend`: FastAPI service for Instagram scraping and image processing
+- `/cart-design-sorcery`: React application for displaying the shop
+- `/Front-Page-Repo`: Additional frontend components
 
 ## Environment Setup
 
@@ -45,22 +48,57 @@ This project requires several environment variables to function properly. For se
 
 ## Running the Application
 
-### Backend
+### Backend Setup
 
+1. Navigate to the backend directory:
 ```bash
 cd backend
+```
+
+2. Create and activate a virtual environment:
+```bash
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
+```
+
+3. Install dependencies:
+```bash
 pip install -r requirements.txt
+```
+
+4. Start the backend server:
+```bash
 uvicorn main:app --reload
 ```
 
-### Frontend
+### Frontend Setup
 
+1. Navigate to the frontend directory:
 ```bash
 cd cart-design-sorcery
+```
+
+2. Install dependencies:
+```bash
 npm install
+```
+
+3. Start the development server:
+```bash
 npm run dev
 ```
 
 Visit `http://localhost:3000` to access the application.
+
+## Usage Flow
+
+1. Open the frontend application (typically at http://localhost:3000)
+2. Enter an Instagram URL in the form on the landing page
+3. After scraping, you'll see a minimalist shop landing page with featured products
+4. Click the "Shop" button to view all products
+
+## Technical Details
+
+- The backend uses Apify's Instagram scraper to fetch posts
+- Images are processed and uploaded to AWS S3
+- The frontend displays the scraped posts as products in a shop layout
