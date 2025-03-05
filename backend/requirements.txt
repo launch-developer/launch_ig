@@ -1,0 +1,7 @@
+fastapi
+uvicorn
+python-dotenv
+apify-client
+requests
+boto3
+python-multipart
